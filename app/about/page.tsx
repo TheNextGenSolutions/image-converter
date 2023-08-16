@@ -1,5 +1,11 @@
+import AboutClient from "./AboutClient";
+
 const About = () => {
-  return <div>About</div>;
+  return (
+    <div>
+      <AboutClient />
+    </div>
+  );
 };
 
 export default About;

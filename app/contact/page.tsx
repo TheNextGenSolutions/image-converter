@@ -1,5 +1,11 @@
+import ContactClient from "./ContactClient";
+
 const Contact = () => {
-  return <div>Contact</div>;
+  return (
+    <div>
+      <ContactClient />
+    </div>
+  );
 };
 
 export default Contact;
