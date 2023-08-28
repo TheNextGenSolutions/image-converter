@@ -11,10 +11,10 @@ interface Info {
 const ContactClient: React.FC = () => {
   const dummyInfo: Info[] = [
     {
-      name: "John Doe",
+      name: "Jay Maniya",
       role: "Founder & CEO",
-      email: "john@example.com",
-      phone: "+1 (123) 456-7890",
+      email: "jaymaniya247@gmail.com",
+      phone: "+91 73833 66609",
     },
     // Add more dummy info cards here
   ];
@@ -84,7 +84,9 @@ const ContactClient: React.FC = () => {
                 <div key={index} className="mb-2">
                   <p className="text-gray-600">{info.name}</p>
                   <p className="text-gray-500 text-sm">{info.role}</p>
-                  <p className="text-gray-500 text-sm">{info.email}</p>
+                  <p className="text-gray-500 text-sm hover:text-purple-600 transition duration-150">
+                    <a href={`mailto:${info.email}`}>{info.email}</a>
+                  </p>
                   <p className="text-gray-500 text-sm">{info.phone}</p>
                 </div>
               ))}

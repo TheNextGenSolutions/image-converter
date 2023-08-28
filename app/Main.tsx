@@ -4,6 +4,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import Dropzone, { FileWithPath } from "react-dropzone";
 import Image from "next/image";
 import { BsUpload } from "react-icons/bs";
+import useImageManipulation from "./hooks/useImageManipulation";
 
 interface ConvertedImage {
   originalImage: File;
@@ -16,6 +17,8 @@ const ImageConverter: React.FC = () => {
   const [convertedImages, setConvertedImages] = useState<ConvertedImage[]>([]);
   const [error, setError] = useState<string>("");
   const [selectedConversion, setSelectedConversion] = useState<string>(".jpg");
+
+  const { image, convertType, resize, rotate } = useImageManipulation(); // Use the custom hook
 
   const supportedExtensions = useMemo(() => {
     return [".jpg", ".jpeg", ".png", ".gif", ".svg"];
@@ -33,29 +36,26 @@ const ImageConverter: React.FC = () => {
       ) {
         setError("");
         setSelectedImage(file);
+        // setImage(null); // Reset the image in the hook when a new image is selected
       } else {
         setError("Invalid file format. Please upload an image file.");
         setSelectedImage(null);
+        // setImage(null);
       }
     },
     [supportedExtensions]
   );
 
-  const handleConvert = (extension: string): void => {
-    if (!selectedImage) return;
+  const handleConvert = async (): Promise<void> => {
+    if (!selectedImage || !selectedConversion) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const convertedImage: ConvertedImage = {
-        originalImage: selectedImage,
-        convertedExtension: extension,
-        convertedBlob: reader.result as string,
-      };
+    const extension = selectedConversion.slice(1); // Remove the leading dot
 
-      setConvertedImages([...convertedImages, convertedImage]);
-    };
-
-    reader.readAsDataURL(selectedImage);
+    try {
+      convertType(selectedImage, extension); // Pass the selectedImage directly
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const handleDownloadConverted = (
@@ -112,7 +112,7 @@ const ImageConverter: React.FC = () => {
           {selectedImage && (
             <div className="mb-4">
               <button
-                onClick={() => handleConvert(selectedConversion)}
+                onClick={() => handleConvert()}
                 className="bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition duration-300 mr-3"
               >
                 Convert to {selectedConversion.toUpperCase()}
@@ -130,6 +130,7 @@ const ImageConverter: React.FC = () => {
               </select>
             </div>
           )}
+
           {convertedImages.map((image, index) => (
             <div key={index} className="mb-4 flex">
               <div className="w-1/2 pr-4">
