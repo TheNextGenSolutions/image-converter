@@ -1,75 +1,47 @@
 "use client";
 
-import { useState } from "react";
-import Jimp from "jimp";
+import { useCallback, useState } from "react";
 
 interface ImageManipulationHook {
-  image: Buffer | null;
-  // convertType: (inputImage: File, newType: string) => void;
-  // resize: (inputImage: string, width: number, height: number) => void;
-  // rotate: (inputImage: string, angle: number) => void;
+  convertImageExtension: (
+    imageData: string,
+    newExtension: string
+  ) => Promise<string>;
+  // Add more functions here for other manipulations
 }
 
-function useImageManipulation(): ImageManipulationHook {
-  const [image, setImage] = useState<Buffer | null>(null);
+export default function useImageManipulation(): ImageManipulationHook {
+  const convertImageExtension = useCallback(
+    async (imageData: string, newExtension: string): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
 
-  // ! It takes relative path for image, That's why not working. Steps : Save Image Somewhere and then convert and at last download it.
-  // const convertType = async (inputImage: File, newType: string) => {
-  //   try {
-  //     const arrayBuffer = await inputImage.arrayBuffer();
-  //     const buffer = Buffer.from(arrayBuffer);
-  //     const jimpImage = await Jimp.read(buffer);
-  //     const convertedImage = await jimpImage.getBufferAsync(
-  //       Jimp[newType.toUpperCase()]
-  //     );
-  //     setImage(convertedImage);
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+          }
 
-  // const resize = async (inputImage: string, width: number, height: number) => {
-  //   try {
-  //     Jimp.read(inputImage, async (err, jimpImage) => {
-  //       if (err) {
-  //         console.error("Error:", err);
-  //         return;
-  //       }
-  //       jimpImage.resize(width, height);
-  //       const resizedImage = await jimpImage.getBufferAsync(
-  //         jimpImage.getMIME()
-  //       );
-  //       setImage(resizedImage);
-  //     });
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
+          const newDataURL = canvas.toDataURL(`image/${newExtension}`);
+          console.log(newDataURL);
+          resolve(newDataURL);
+        };
+        img.onerror = function (error) {
+          reject(error);
+        };
+        img.src = imageData;
+      });
+    },
+    []
+  );
 
-  // const rotate = async (inputImage: string, angle: number) => {
-  //   try {
-  //     Jimp.read(inputImage, async (err, jimpImage) => {
-  //       if (err) {
-  //         console.error("Error:", err);
-  //         return;
-  //       }
-  //       jimpImage.rotate(angle);
-  //       const rotatedImage = await jimpImage.getBufferAsync(
-  //         jimpImage.getMIME()
-  //       );
-  //       setImage(rotatedImage);
-  //     });
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
+  // Add more functions for other manipulations
 
   return {
-    image,
-    // convertType,
-    // resize,
-    // rotate,
+    convertImageExtension,
+    // Add more functions here
   };
 }
-
-export default useImageManipulation;

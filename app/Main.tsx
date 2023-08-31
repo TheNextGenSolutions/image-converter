@@ -18,10 +18,10 @@ const ImageConverter: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [selectedConversion, setSelectedConversion] = useState<string>(".jpg");
 
-  const { image, convertType, resize, rotate } = useImageManipulation(); // Use the custom hook
+  const { convertImageExtension } = useImageManipulation(); // Use the custom hook
 
   const supportedExtensions = useMemo(() => {
-    return [".jpg", ".jpeg", ".png", ".gif", ".svg"];
+    return [".jpg", ".png"];
   }, []);
 
   const handleImageUpload = useCallback(
@@ -51,10 +51,20 @@ const ImageConverter: React.FC = () => {
 
     const extension = selectedConversion.slice(1); // Remove the leading dot
 
-    try {
-      convertType(selectedImage, extension); // Pass the selectedImage directly
-    } catch (error) {
-      console.error("Error:", error);
+    // Call the convertImage function from your hook
+    const convertedImage = await convertImageExtension(
+      URL.createObjectURL(selectedImage),
+      extension
+    );
+
+    if (convertedImage) {
+      const imageData: ConvertedImage = {
+        convertedBlob: convertedImage,
+        originalImage: selectedImage,
+        convertedExtension: extension,
+      };
+
+      setConvertedImages([imageData]);
     }
   };
 
@@ -63,10 +73,12 @@ const ImageConverter: React.FC = () => {
     extension: string,
     originalName: string
   ): void => {
+    const fileNameWithoutExtension = removeExtensionFromFilename(originalName);
     const link = document.createElement("a");
     link.href = blob;
-    link.download = `converted_${originalName}${extension}`;
+    link.download = `converted_${fileNameWithoutExtension}`;
     link.click();
+    URL.revokeObjectURL(blob);
   };
 
   return (
@@ -167,3 +179,11 @@ const ImageConverter: React.FC = () => {
 };
 
 export default ImageConverter;
+
+function removeExtensionFromFilename(filename: string): string {
+  const lastDotIndex = filename.lastIndexOf(".");
+  if (lastDotIndex !== -1) {
+    return filename.substring(0, lastDotIndex);
+  }
+  return filename;
+}
